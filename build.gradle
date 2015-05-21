@@ -5,7 +5,6 @@ android {
     buildToolsVersion '21.0.0'
 
     defaultConfig {
-        applicationId "com.axolotlinteractive.stackshark.android.reporter"
         minSdkVersion 10
         targetSdkVersion 21
         versionCode 1
