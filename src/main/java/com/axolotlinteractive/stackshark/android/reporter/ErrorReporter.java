@@ -2,10 +2,11 @@ package com.axolotlinteractive.stackshark.android.reporter;
 
 import android.content.Context;
 
-import com.axolotlinteractive.android.database.DatabaseHelper;
-import com.axolotlinteractive.android.database.TableStructure;
 import com.axolotlinteractive.stackshark.android.reporter.database.ErrorObject;
 import com.axolotlinteractive.stackshark.android.reporter.database.StackObject;
+
+import org.anolis.databases.DatabaseHelper;
+import org.anolis.databases.TableStructure;
 
 import java.util.ArrayList;
 

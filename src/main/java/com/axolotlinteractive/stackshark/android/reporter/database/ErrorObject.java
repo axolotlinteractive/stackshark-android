@@ -5,10 +5,10 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Log;
 
-import com.axolotlinteractive.android.database.DatabaseHelper;
-import com.axolotlinteractive.android.database.DatabaseObject;
-import com.axolotlinteractive.android.database.TableStructure;
 import com.axolotlinteractive.stackshark.android.reporter.ErrorReporter;
+
+import org.anolis.databases.DatabaseObject;
+import org.anolis.databases.TableStructure;
 
 import java.util.ArrayList;
 import java.util.HashMap;
