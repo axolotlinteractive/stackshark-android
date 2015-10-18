@@ -14,8 +14,10 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 
 /**
  * Created by brycemeyer on 11/2/14.
@@ -49,7 +51,12 @@ public class ErrorReport extends AsyncTask<ErrorObject, Void, Boolean>
         String data = "";
 
         data+= "offline=" + error.offline;
-        data+= "&message=" + error.message;
+        try {
+            data += "&message=" + URLEncoder.encode(error.message, "UTF-8");
+        }
+        catch(UnsupportedEncodingException e) {
+            Log.e("error report", e.getMessage(), e);
+        }
         data+= "&application_version=" + error.application_version;
         data+= "&platform_version=" + error.platform_version;
         data+= "%type=" + error.type;
