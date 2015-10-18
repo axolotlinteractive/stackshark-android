@@ -103,6 +103,7 @@ public class ErrorReport extends AsyncTask<ErrorObject, Void, Boolean>
                 connection.setFixedLengthStreamingMode(urlParameters.length());
 
                 connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                connection.setRequestProperty("Accept-Charset", "UTF-8");
 
                 DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
                 wr.writeBytes(urlParameters);
@@ -116,8 +117,8 @@ public class ErrorReport extends AsyncTask<ErrorObject, Void, Boolean>
                             new InputStreamReader(connection.getInputStream()));
                     String response = "";
 
-                    while (in.ready()) {
-                        response+= in.readLine();
+                    for (String line; (line = in.readLine()) != null;) {
+                        response+= line;
                     }
                     in.close();
 
