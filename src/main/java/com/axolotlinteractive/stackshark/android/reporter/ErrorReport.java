@@ -41,6 +41,45 @@ public class ErrorReport extends AsyncTask<ErrorObject, Void, Boolean>
         // end compatibility code
     }
 
+    /**
+     * creates a http ready piece of data
+     *
+     * @param projectKey String the key this project is registered to on the server
+     * @param error ErrorObject the error that we are building data for
+     * @return String the url encoded body for the request
+     */
+    private String buildPutData(String projectKey, ErrorObject error) {
+
+        String data = "";
+
+        data+= "offline=" + error.offline;
+        data+= "&message=" + error.message;
+        data+= "&application_version=" + error.application_version;
+        data+= "&platform_version=" + error.platform_version;
+        data+= "%type=" + error.type;
+        data+= "&project_key=" + projectKey;
+
+        JSONArray stack = new JSONArray();
+        for(StackObject trace : error.stackTrace)
+        {
+            try {
+                JSONObject stackObject = new JSONObject();
+                stackObject.put("file", trace.file_name);
+                stackObject.put("class", trace.class_name);
+                stackObject.put("function", trace.method_name);
+                stackObject.put("line", trace.line_number);
+                stack.put(stackObject);
+            }
+            catch(JSONException e) {
+                //do nothing
+            }
+        }
+
+        data+= "&stack=" + stack.toString();
+
+        return data;
+    }
+
     @Override
     protected Boolean doInBackground(ErrorObject[] params)
     {
