@@ -59,7 +59,7 @@ public class ErrorReport extends AsyncTask<ErrorObject, Void, Boolean>
         }
         data+= "&application_version=" + error.application_version;
         data+= "&platform_version=" + error.platform_version;
-        data+= "%type=" + error.type;
+        data+= "&type=" + error.type;
         data+= "&project_key=" + projectKey;
 
         JSONArray stack = new JSONArray();
