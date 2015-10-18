@@ -109,6 +109,8 @@ public class ErrorReport extends AsyncTask<ErrorObject, Void, Boolean>
                 wr.flush();
                 wr.close();
 
+                connection.connect();
+
                 if (connection.getResponseCode() == 200) {
                     BufferedReader in = new BufferedReader(
                             new InputStreamReader(connection.getInputStream()));
