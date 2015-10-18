@@ -7,19 +7,15 @@ import android.util.Log;
 import com.axolotlinteractive.stackshark.android.reporter.database.ErrorObject;
 import com.axolotlinteractive.stackshark.android.reporter.database.StackObject;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 /**
  * Created by brycemeyer on 11/2/14.
@@ -83,52 +79,57 @@ public class ErrorReport extends AsyncTask<ErrorObject, Void, Boolean>
     @Override
     protected Boolean doInBackground(ErrorObject[] params)
     {
-        String url = "http://stackshark.com/api/1/errors/";
         if(params.length < 1)
             return false;
         ErrorObject error = params[0];
         try
         {
-            HttpPut put = new HttpPut(url);
-            ArrayList<NameValuePair> data = new ArrayList<NameValuePair>();
+            URL url = new URL("http://stackshark.com/api/1/errors/");
 
-            data.add(new BasicNameValuePair("offline", error.offline));
-            data.add(new BasicNameValuePair("message", error.message));
-            data.add(new BasicNameValuePair("application_version", error.application_version));
-            data.add(new BasicNameValuePair("platform_version", error.platform_version));
-            data.add(new BasicNameValuePair("type", error.type));
-            data.add(new BasicNameValuePair("project_key", ErrorReporter.ProjectKey));
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
-            JSONArray stack = new JSONArray();
-            for(StackObject trace : error.stackTrace)
-            {
-                JSONObject stackObject = new JSONObject();
-                stackObject.put("file", trace.file_name);
-                stackObject.put("class", trace.class_name);
-                stackObject.put("function", trace.method_name);
-                stackObject.put("line", trace.line_number);
-                stack.put(stackObject);
+            try {
+                String urlParameters = this.buildPutData(ErrorReporter.ProjectKey, error);
+
+                connection.setDoOutput(true);
+                connection.setRequestMethod("PUT");
+                connection.setFixedLengthStreamingMode(urlParameters.length());
+
+                connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+
+                DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
+                wr.writeBytes(urlParameters);
+                wr.flush();
+                wr.close();
+
+                if (connection.getResponseCode() == 200) {
+                    BufferedReader in = new BufferedReader(
+                            new InputStreamReader(connection.getInputStream()));
+                    String response = "";
+
+                    while (in.ready()) {
+                        response+= in.readLine();
+                    }
+                    in.close();
+
+                    JSONObject responseData = new JSONObject(response);
+
+
+                    if(responseData.getInt("status") == 3101)
+                        error.setReceived();
+                    else
+                        error.setFailed();
+
+                    return true;
+                }
+                else {
+                    error.setNetworkDown();
+                    return false;
+                }
             }
-            data.add(new BasicNameValuePair("stack", stack.toString()));
-
-            put.setEntity(new UrlEncodedFormEntity(data));
-
-            DefaultHttpClient httpClient = new DefaultHttpClient();
-            HttpConnectionParams.setSoTimeout(httpClient.getParams(), 20000);
-            HttpConnectionParams.setConnectionTimeout(httpClient.getParams(),20000);
-
-            HttpResponse response = httpClient.execute(put);
-            HttpEntity ent = response.getEntity();
-            String rawResponse = EntityUtils.toString(ent);
-
-            Log.d("stackShark", "rawResponse = " + rawResponse);
-
-            JSONObject responseObject = new JSONObject(rawResponse);
-            if(responseObject.getInt("status") == 3101)
-                error.setReceived();
-            else
-                error.setFailed();
-            return true;
+            finally {
+                connection.disconnect();
+            }
 
         }
         catch(Exception e)
