@@ -52,7 +52,7 @@ public class ErrorReport extends AsyncTask<ErrorObject, Void, Boolean>
 
         data+= "offline=" + error.offline;
         try {
-            data += "&message=" + URLEncoder.encode(error.message, "UTF-8");
+            data += "&message=" + (error.message == null ? "" : URLEncoder.encode(error.message, "UTF-8"));
         }
         catch(UnsupportedEncodingException e) {
             Log.e("error report", e.getMessage(), e);
